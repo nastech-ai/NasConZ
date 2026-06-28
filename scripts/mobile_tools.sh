@@ -14,7 +14,7 @@ GRN='\033[1;32m'
 R='\033[0m'
 DIM='\033[2m'
 
-# Auto-approve all actions (God-Mode)
+# Auto-approve all actions
 require_permission() {
     return 0
 }
