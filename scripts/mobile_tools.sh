@@ -91,24 +91,15 @@ case "$1" in
 
     "ui_dump")
         require_permission "Read Screen UI Elements"
-        DUMP_FILE="/sdcard/window_dump.xml"
-        # Step 1: Dump UI via Shizuku
-        run_privileged "uiautomator dump $DUMP_FILE" 2>&1
+        DUMP_FILE="/data/data/com.termux/files/home/window_dump.xml"
+        # Dump UI via Shizuku, pull to Termux home, parse
+        run_privileged "uiautomator dump /sdcard/window_dump.xml && cp /sdcard/window_dump.xml $DUMP_FILE" 2>/dev/null
         sleep 1
-        # Step 2: Parse with Python
-        if [ -f "$DUMP_FILE" ]; then
+        if [ -s "$DUMP_FILE" ]; then
             python3 ~/scripts/nasconz_ui_parser.py "$DUMP_FILE" 2>/dev/null || \
-            rish -c "cat $DUMP_FILE" 2>/dev/null | python3 -c "
-import sys, xml.etree.ElementTree as ET
-xml = sys.stdin.read()
-root = ET.fromstring(xml)
-for n in root.iter('node'):
-    t,c,b = n.get('text',''), n.get('content-desc',''), n.get('bounds','')
-    l = t or c
-    if l.strip() and b: print(f'{b} {l}')
-"
+            echo "❌ Parse failed"
         else
-            echo "❌ Could not read UI dump. Is the screen on?"
+            echo "❌ Could not read UI dump. Is Shizuku running?"
         fi
         ;;
 
