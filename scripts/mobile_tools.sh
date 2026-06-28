@@ -91,39 +91,24 @@ case "$1" in
 
     "ui_dump")
         require_permission "Read Screen UI Elements"
-        DUMP_FILE="$HOME/storage/shared/window_dump.xml"
+        DUMP_FILE="/sdcard/window_dump.xml"
         # Step 1: Dump UI via Shizuku
-        run_privileged "uiautomator dump /sdcard/window_dump.xml" 2>&1
-        # Step 2: Small delay for file write
+        run_privileged "uiautomator dump $DUMP_FILE" 2>&1
         sleep 1
-        # Step 3: Parse with Node (using storage/shared which maps to /sdcard)
+        # Step 2: Parse with Python
         if [ -f "$DUMP_FILE" ]; then
-            node -e "
-const fs = require('fs');
-const xml = fs.readFileSync('$DUMP_FILE', 'utf8');
-const re = /(text|content-desc)=\"([^\"]+)\"[^>]*bounds=\"(\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\])\"/g;
-let m;
-while ((m = re.exec(xml)) !== null) {
-  if (m[2].trim()) console.log(m[3] + ' ' + m[2]);
-}
+            python3 ~/scripts/nasconz_ui_parser.py "$DUMP_FILE" 2>/dev/null || \
+            rish -c "cat $DUMP_FILE" 2>/dev/null | python3 -c "
+import sys, xml.etree.ElementTree as ET
+xml = sys.stdin.read()
+root = ET.fromstring(xml)
+for n in root.iter('node'):
+    t,c,b = n.get('text',''), n.get('content-desc',''), n.get('bounds','')
+    l = t or c
+    if l.strip() and b: print(f'{b} {l}')
 "
         else
-            echo "DEBUG: Dump file not found at $DUMP_FILE"
-            echo "DEBUG: Checking /sdcard directly via rish..."
-            run_privileged "cat /sdcard/window_dump.xml" > /tmp/ui_dump.xml 2>/dev/null
-            if [ -s /tmp/ui_dump.xml ]; then
-                node -e "
-const fs = require('fs');
-const xml = fs.readFileSync('/tmp/ui_dump.xml', 'utf8');
-const re = /(text|content-desc)=\"([^\"]+)\"[^>]*bounds=\"(\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\])\"/g;
-let m;
-while ((m = re.exec(xml)) !== null) {
-  if (m[2].trim()) console.log(m[3] + ' ' + m[2]);
-}
-"
-            else
-                echo "❌ Could not read UI dump. Is the screen on?"
-            fi
+            echo "❌ Could not read UI dump. Is the screen on?"
         fi
         ;;
 
