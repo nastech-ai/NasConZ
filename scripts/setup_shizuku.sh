@@ -1,6 +1,6 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
-echo -e "\033[1;36m🤖 Official Shizuku Integration Setup for Termux\033[0m"
+echo -e "\033[1;36m🤖 NasConZ — Shizuku Integration for Termux\033[0m"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # Setup Termux storage access if needed

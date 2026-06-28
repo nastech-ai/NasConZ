@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# OpenClaude Mobile Assistant - Hardware Control Toolkit
-# Use this script to abstract complex Termux API interactions.
+# NasConZ Phone Control - Hardware Control Toolkit
+# Part of NasTech Agent — gives NasTech full control of Android hardware.
 
 VERSION="1.0.0"
 
